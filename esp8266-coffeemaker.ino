@@ -7,6 +7,7 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
+#include <Ticker.h>
 
 MDNSResponder mdns;
 
@@ -18,6 +19,19 @@ ESP8266WebServer server(80);
 // Relay is connected to D8
 int relay_pin = D8;
 bool relay_state = false;
+
+// Relay timeout
+Ticker relay_timeout;
+
+bool setRelayState(bool state) {
+  relay_state = state;
+  digitalWrite(relay_pin, relay_state ? HIGH : LOW);
+
+  if(state)
+    relay_timeout.once(60 * 10, [](){ setRelayState(false); });
+  else
+    relay_timeout.detach();
+}
 
 void setup(void){
   
@@ -51,15 +65,13 @@ void setup(void){
   });
   
   server.on("/api/on", []{
-    digitalWrite(relay_pin, HIGH);
-    relay_state = true;
+    setRelayState(true);
     server.sendHeader("Access-Control-Allow-Origin", "*");
     server.send(200, "text/html", String(relay_state));
   });
   
   server.on("/api/off", []{
-    digitalWrite(relay_pin, LOW);
-    relay_state = false;
+    setRelayState(false);
     server.sendHeader("Access-Control-Allow-Origin", "*");
     server.send(200, "text/html", String(relay_state));
   });
