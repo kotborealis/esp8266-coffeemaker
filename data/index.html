@@ -1,0 +1,294 @@
+<html>
+    <head>
+        <title>esp8266-coffeemaker</title>
+        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+        <meta content="width=device-width, initial-scale=1" name="viewport">
+        <style>
+			.power-switch {
+			  --color-invert: #ffffff;
+			  --width: 150px;
+			  --height: 150px;
+			  position: relative;
+			  display: -webkit-box;
+			  display: flex;
+			  -webkit-box-pack: center;
+			          justify-content: center;
+			  -webkit-box-align: center;
+			          align-items: center;
+			  width: var(--width);
+			  height: var(--height);
+			}
+			.power-switch .button {
+			  width: 100%;
+			  height: 100%;
+			  display: -webkit-box;
+			  display: flex;
+			  -webkit-box-pack: center;
+			          justify-content: center;
+			  -webkit-box-align: center;
+			          align-items: center;
+			  position: relative;
+			}
+			.power-switch .button:after {
+			  content: "";
+			  width: 100%;
+			  height: 100%;
+			  position: absolute;
+			  background: radial-gradient(circle closest-side, var(--color-invert), transparent);
+			  -webkit-filter: blur(20px);
+			          filter: blur(20px);
+			  opacity: 0;
+			  -webkit-transition: opacity 1s ease, -webkit-transform 1s ease;
+			  transition: opacity 1s ease, -webkit-transform 1s ease;
+			  transition: opacity 1s ease, transform 1s ease;
+			  transition: opacity 1s ease, transform 1s ease, -webkit-transform 1s ease;
+			  -webkit-transform: perspective(1px) translateZ(0);
+			          transform: perspective(1px) translateZ(0);
+			  -webkit-backface-visibility: hidden;
+			          backface-visibility: hidden;
+			}
+			.power-switch .button .power-on,
+			.power-switch .button .power-off {
+			  height: 100%;
+			  width: 100%;
+			  position: absolute;
+			  z-index: 1;
+			  fill: none;
+			  stroke: var(--color-invert);
+			  stroke-width: 8px;
+			  stroke-linecap: round;
+			  stroke-linejoin: round;
+			}
+			.power-switch .button .power-on .line,
+			.power-switch .button .power-off .line {
+			  opacity: .2;
+			}
+			.power-switch .button .power-on .circle,
+			.power-switch .button .power-off .circle {
+			  opacity: .2;
+			  -webkit-transform: rotate(-58deg);
+			          transform: rotate(-58deg);
+			  -webkit-transform-origin: center 80px;
+			          transform-origin: center 80px;
+			  stroke-dasharray: 220;
+			  stroke-dashoffset: 40;
+			}
+			.power-switch .button .power-on {
+			  -webkit-filter: drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.8));
+			          filter: drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.8));
+			}
+			.power-switch .button .power-on .line {
+			  opacity: 0;
+			  -webkit-transition: opacity .3s ease 1s;
+			  transition: opacity .3s ease 1s;
+			}
+			.power-switch .button .power-on .circle {
+			  opacity: 1;
+			  stroke-dashoffset: 220;
+			  -webkit-transition: stroke-dashoffset 1s ease 0s, -webkit-transform 0s ease;
+			  transition: stroke-dashoffset 1s ease 0s, -webkit-transform 0s ease;
+			  transition: transform 0s ease, stroke-dashoffset 1s ease 0s;
+			  transition: transform 0s ease, stroke-dashoffset 1s ease 0s, -webkit-transform 0s ease;
+			}
+			.power-switch input {
+			  position: absolute;
+			  height: 100%;
+			  width: 100%;
+			  z-index: 2;
+			  cursor: pointer;
+			  opacity: 0;
+			}
+			.power-switch input:checked + .button:after {
+			  opacity: 0.15;
+			  -webkit-transform: scale(2) perspective(1px) translateZ(0);
+			          transform: scale(2) perspective(1px) translateZ(0);
+			  -webkit-backface-visibility: hidden;
+			          backface-visibility: hidden;
+			  -webkit-transition: opacity .5s ease, -webkit-transform .5s ease;
+			  transition: opacity .5s ease, -webkit-transform .5s ease;
+			  transition: opacity .5s ease, transform .5s ease;
+			  transition: opacity .5s ease, transform .5s ease, -webkit-transform .5s ease;
+			}
+			.power-switch input:checked + .button .power-on,
+			.power-switch input:checked + .button .power-off {
+			  -webkit-animation: click-animation .3s ease forwards;
+			          animation: click-animation .3s ease forwards;
+			  -webkit-transform: scale(1);
+			          transform: scale(1);
+			}
+			.power-switch input:checked + .button .power-on .line,
+			.power-switch input:checked + .button .power-off .line {
+			  -webkit-animation: line-animation .8s ease-in forwards;
+			          animation: line-animation .8s ease-in forwards;
+			}
+			.power-switch input:checked + .button .power-on .circle,
+			.power-switch input:checked + .button .power-off .circle {
+			  -webkit-transform: rotate(302deg);
+			          transform: rotate(302deg);
+			}
+			.power-switch input:checked + .button .power-on .line {
+			  opacity: 1;
+			  -webkit-transition: opacity .05s ease-in .55s;
+			  transition: opacity .05s ease-in .55s;
+			}
+			.power-switch input:checked + .button .power-on .circle {
+			  -webkit-transform: rotate(302deg);
+			          transform: rotate(302deg);
+			  stroke-dashoffset: 40;
+			  -webkit-transition: stroke-dashoffset .4s ease .2s, -webkit-transform .4s ease .2s;
+			  transition: stroke-dashoffset .4s ease .2s, -webkit-transform .4s ease .2s;
+			  transition: transform .4s ease .2s, stroke-dashoffset .4s ease .2s;
+			  transition: transform .4s ease .2s, stroke-dashoffset .4s ease .2s, -webkit-transform .4s ease .2s;
+			}
+
+			@-webkit-keyframes line-animation {
+			  0% {
+			    -webkit-transform: translateY(0);
+			            transform: translateY(0);
+			  }
+			  10% {
+			    -webkit-transform: translateY(10px);
+			            transform: translateY(10px);
+			  }
+			  40% {
+			    -webkit-transform: translateY(-25px);
+			            transform: translateY(-25px);
+			  }
+			  60% {
+			    -webkit-transform: translateY(-25px);
+			            transform: translateY(-25px);
+			  }
+			  85% {
+			    -webkit-transform: translateY(10px);
+			            transform: translateY(10px);
+			  }
+			  100% {
+			    -webkit-transform: translateY(0px);
+			            transform: translateY(0px);
+			  }
+			}
+
+			@keyframes line-animation {
+			  0% {
+			    -webkit-transform: translateY(0);
+			            transform: translateY(0);
+			  }
+			  10% {
+			    -webkit-transform: translateY(10px);
+			            transform: translateY(10px);
+			  }
+			  40% {
+			    -webkit-transform: translateY(-25px);
+			            transform: translateY(-25px);
+			  }
+			  60% {
+			    -webkit-transform: translateY(-25px);
+			            transform: translateY(-25px);
+			  }
+			  85% {
+			    -webkit-transform: translateY(10px);
+			            transform: translateY(10px);
+			  }
+			  100% {
+			    -webkit-transform: translateY(0px);
+			            transform: translateY(0px);
+			  }
+			}
+			@-webkit-keyframes click-animation {
+			  0% {
+			    -webkit-transform: scale(1);
+			            transform: scale(1);
+			  }
+			  50% {
+			    -webkit-transform: scale(0.9);
+			            transform: scale(0.9);
+			  }
+			  100% {
+			    -webkit-transform: scale(1);
+			            transform: scale(1);
+			  }
+			}
+			@keyframes click-animation {
+			  0% {
+			    -webkit-transform: scale(1);
+			            transform: scale(1);
+			  }
+			  50% {
+			    -webkit-transform: scale(0.9);
+			            transform: scale(0.9);
+			  }
+			  100% {
+			    -webkit-transform: scale(1);
+			            transform: scale(1);
+			  }
+			}
+			body {
+			  background: #1B1A23;
+			  height: 100vh;
+			  font: 400 16px 'Poppins', sans-serif;
+			  display: -webkit-box;
+			  display: flex;
+			  -webkit-box-orient: vertical;
+			  -webkit-box-direction: normal;
+			          flex-direction: column;
+			  -webkit-box-pack: center;
+			          justify-content: center;
+			  -webkit-box-align: center;
+			          align-items: center;
+			}
+			h1 {
+				color: white;
+				font-family: sans-serif;
+			}
+		</style>
+    </head>
+    <body>
+    	<h1>Coffee Maker</h1>
+        <div class="power-switch">
+		  <input type="checkbox" />
+		  <div class="button">
+		    <svg class="power-off">
+		      <use xlink:href="#line" class="line" />
+		      <use xlink:href="#circle" class="circle" />
+		    </svg>
+		    <svg class="power-on">
+		      <use xlink:href="#line" class="line" />
+		      <use xlink:href="#circle" class="circle" />
+		    </svg>
+		  </div>
+		</div>
+
+		<!-- SVG -->
+		<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+		  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" id="line">
+		    <line x1="75" y1="34" x2="75" y2="58"/>
+		  </symbol>
+		  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" id="circle">
+		    <circle cx="75" cy="80" r="35"/>
+		  </symbol>
+		</svg>
+    </body>
+    <script>
+    	const coffeemaker = {
+    		powered: false
+    	};
+
+    	const toggle = document.querySelector('input');
+    	toggle.addEventListener('change', () => {
+    		if(toggle.checked) 
+    			fetch("/api/on")
+    		else
+    			fetch("/api/off")
+    	});
+
+    	const updateToggle = () => toggle.checked = coffeemaker.powered;
+
+    	const queryState = async () => {
+    		const res = await fetch("/api/state");
+    		coffeemaker.powered = (await res.text()) === "1";
+    		updateToggle();
+    	};
+    	setInterval(queryState, 1000);
+    	queryState();
+    </script>
+</html>
