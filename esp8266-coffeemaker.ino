@@ -15,12 +15,8 @@ MDNSResponder mdns;
 
 ESP8266WebServer server(80);
 
-String webPage = "";
-
 // Relay is connected to D8
 int relay_pin = D8;
-
-
 bool relay_state = false;
 
 void setup(void){
@@ -30,8 +26,6 @@ void setup(void){
 
   delay(1000);
   Serial.begin(115200);
-  
-  webPage += "<h1>ESP8266 Web Server</h1><p>Relay <a href=\"relayOn\"><button>ON</button></a>&nbsp;<a href=\"relayOff\"><button>OFF</button></a></p>";
   
   WiFi.begin(ssid, password);
 
